@@ -403,7 +403,8 @@
 
             <div class="form-group">
                 <label for="descricao">Descrição / Histórico:</label>
-                <input type="text" id="descricao" class="form-control" placeholder="Ex: Pagamento, Material..." required>
+                <!-- Removido o 'required' para permitir envios diretos apenas com o valor -->
+                <input type="text" id="descricao" class="form-control" placeholder="Ex: Pagamento, Material...">
             </div>
 
             <div class="form-group">
@@ -427,7 +428,6 @@
                 </div>
                 <div class="form-group full-width">
                     <label for="valor">Valor (R$):</label>
-                    <!-- Alterado para tipo text com suporte a teclado decimal do celular -->
                     <input type="text" id="valor" class="form-control" inputmode="decimal" placeholder="0,00" required>
                 </div>
             </div>
@@ -631,7 +631,7 @@
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Tratamento para aceitar tanto vírgula quanto ponto do celular
+        // Tratamento de valor para aceitar formato digitado no celular
         const rawValor = document.getElementById('valor').value;
         const valorTratado = parseFloat(rawValor.replace(',', '.'));
 
@@ -640,10 +640,12 @@
             return;
         }
 
+        const descricaoInput = document.getElementById('descricao').value.trim();
+
         const novaTransacao = {
             id: Date.now(),
             tipo: document.querySelector('input[name="tipo"]:checked').value,
-            descricao: document.getElementById('descricao').value,
+            descricao: descricaoInput !== '' ? descricaoInput : 'Sem descrição',
             categoria: document.getElementById('categoria').value,
             data: document.getElementById('data').value,
             forma: document.getElementById('forma').value,
