@@ -384,12 +384,12 @@
             <h2>Entradas e Saídas</h2>
         </div>
 
-        <form id="finance-form">
-            <div class="section-header">
-                <span>TRANSAÇÕES</span>
-                <button type="button" class="btn-logout" id="btn-logout">Sair</button>
-            </div>
+        <div class="section-header">
+            <span>TRANSAÇÕES</span>
+            <button type="button" class="btn-logout" id="btn-logout" onclick="fazerLogout()">Sair</button>
+        </div>
 
+        <form id="finance-form">
             <div class="radio-group">
                 <label class="radio-card">
                     <input type="radio" id="entrada" name="tipo" value="Entrada" checked>
@@ -403,7 +403,6 @@
 
             <div class="form-group">
                 <label for="descricao">Descrição / Histórico:</label>
-                <!-- Removido o 'required' para permitir envios diretos apenas com o valor -->
                 <input type="text" id="descricao" class="form-control" placeholder="Ex: Pagamento, Material...">
             </div>
 
@@ -480,7 +479,6 @@
     const registerForm = document.getElementById('register-form');
     const loginError = document.getElementById('login-error');
     const registerMsg = document.getElementById('register-msg');
-    const btnLogout = document.getElementById('btn-logout');
 
     // Alternar Abas
     tabLogin.addEventListener('click', () => {
@@ -545,19 +543,19 @@
         }
     });
 
-    // Verificar se já está logado
-    if (localStorage.getItem('user_logged_in')) {
-        showApp();
-    }
-
-    // Evento de Logout
-    btnLogout.addEventListener('click', function() {
+    // Função global de Logout
+    window.fazerLogout = function() {
         localStorage.removeItem('user_logged_in');
         appScreen.classList.add('hidden');
         authScreen.classList.remove('hidden');
         document.getElementById('usuario-login').value = '';
         document.getElementById('senha-login').value = '';
-    });
+    };
+
+    // Verificar se já está logado ao carregar
+    if (localStorage.getItem('user_logged_in')) {
+        showApp();
+    }
 
     function showApp() {
         authScreen.classList.add('hidden');
@@ -573,7 +571,7 @@
     let transacoes = [];
 
     function getStorageKey() {
-        const currentUser = localStorage.getItem('user_logged_in');
+        const currentUser = localStorage.getItem('user_logged_in') || 'invitado';
         return `transacoes_${currentUser}`;
     }
 
@@ -602,7 +600,7 @@
             }
 
             const partesData = item.data.split('-');
-            const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0].substring(2)}`;
+            const dataFormatada = partesData.length === 3 ? `${partesData[2]}/${partesData[1]}/${partesData[0].substring(2)}` : item.data;
             const badgeClass = item.tipo === 'Entrada' ? 'badge-entrada' : 'badge-saida';
 
             const novaLinha = document.createElement('tr');
@@ -631,12 +629,11 @@
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Tratamento de valor para aceitar formato digitado no celular
         const rawValor = document.getElementById('valor').value;
-        const valorTratado = parseFloat(rawValor.replace(',', '.'));
+        const valorTratado = parseFloat(rawValor.replace(/\./g, '').replace(',', '.'));
 
         if (isNaN(valorTratado) || valorTratado <= 0) {
-            alert('Por favor, insira um valor válido.');
+            alert('Por favor, insira um valor numérico válido.');
             return;
         }
 
