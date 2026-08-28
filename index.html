@@ -562,66 +562,85 @@
         authScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
         document.getElementById('data').valueAsDate = new Date();
+        carregarTransacoes();
     }
 
-    // Lógica Financeira
+    // Lógica Financeira e Armazenamento
     const form = document.getElementById('finance-form');
     const tabela = document.getElementById('tabela-registros').querySelector('tbody');
     
-    let totalEntradas = 0;
-    let totalSaidas = 0;
+    let transacoes = [];
 
-    function atualizarTotais() {
+    function getStorageKey() {
+        const currentUser = localStorage.getItem('user_logged_in');
+        return `transacoes_${currentUser}`;
+    }
+
+    function salvarTransacoes() {
+        localStorage.setItem(getStorageKey(), JSON.stringify(transacoes));
+    }
+
+    function carregarTransacoes() {
+        const dadosSalvos = localStorage.getItem(getStorageKey());
+        transacoes = dadosSalvos ? JSON.parse(dadosSalvos) : [];
+        renderizarInterface();
+    }
+
+    function renderizarInterface() {
+        tabela.innerHTML = '';
+        let totalEntradas = 0;
+        let totalSaidas = 0;
+
+        transacoes.forEach((item, index) => {
+            if (item.tipo === 'Entrada') {
+                totalEntradas += item.valor;
+            } else {
+                totalSaidas += item.valor;
+            }
+
+            const partesData = item.data.split('-');
+            const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0].substring(2)}`;
+            const badgeClass = item.tipo === 'Entrada' ? 'badge-entrada' : 'badge-saida';
+
+            const novaLinha = document.createElement('tr');
+            novaLinha.innerHTML = `
+                <td>${dataFormatada}</td>
+                <td>${item.descricao}<br><small style="color: var(--text-muted); font-size: 0.7rem;">${item.categoria ? item.categoria + ' • ' : ''}${item.forma}</small></td>
+                <td><span class="tipo-badge ${badgeClass}">${item.tipo}</span></td>
+                <td style="font-weight: bold;">R$ ${item.valor.toFixed(2)}</td>
+                <td><button type="button" class="btn-delete" title="Excluir" onclick="deletarTransacao(${index})">✕</button></td>
+            `;
+            tabela.prepend(novaLinha);
+        });
+
         const saldo = totalEntradas - totalSaidas;
         document.getElementById('total-entradas').innerText = `R$ ${totalEntradas.toFixed(2)}`;
         document.getElementById('total-saidas').innerText = `R$ ${totalSaidas.toFixed(2)}`;
         document.getElementById('total-saldo').innerText = `R$ ${saldo.toFixed(2)}`;
     }
 
+    window.deletarTransacao = function(index) {
+        transacoes.splice(index, 1);
+        salvarTransacoes();
+        renderizarInterface();
+    };
+
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const tipo = document.querySelector('input[name="tipo"]:checked').value;
-        const descricao = document.getElementById('descricao').value;
-        const categoria = document.getElementById('categoria').value;
-        const dataInput = document.getElementById('data').value;
-        const forma = document.getElementById('forma').value;
-        const valor = parseFloat(document.getElementById('valor').value);
+        const novaTransacao = {
+            id: Date.now(),
+            tipo: document.querySelector('input[name="tipo"]:checked').value,
+            descricao: document.getElementById('descricao').value,
+            categoria: document.getElementById('categoria').value,
+            data: document.getElementById('data').value,
+            forma: document.getElementById('forma').value,
+            valor: parseFloat(document.getElementById('valor').value)
+        };
 
-        const partesData = dataInput.split('-');
-        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0].substring(2)}`;
-
-        if (tipo === 'Entrada') {
-            totalEntradas += valor;
-        } else {
-            totalSaidas += valor;
-        }
-
-        atualizarTotais();
-
-        const novaLinha = document.createElement('tr');
-        const badgeClass = tipo === 'Entrada' ? 'badge-entrada' : 'badge-saida';
-        
-        novaLinha.innerHTML = `
-            <td>${dataFormatada}</td>
-            <td>${descricao}<br><small style="color: var(--text-muted); font-size: 0.7rem;">${categoria ? categoria + ' • ' : ''}${forma}</small></td>
-            <td><span class="tipo-badge ${badgeClass}">${tipo}</span></td>
-            <td style="font-weight: bold;">R$ ${valor.toFixed(2)}</td>
-            <td><button type="button" class="btn-delete" title="Excluir">✕</button></td>
-        `;
-
-        // Evento para excluir a linha e deduzir o valor dos totais
-        novaLinha.querySelector('.btn-delete').addEventListener('click', function() {
-            if (tipo === 'Entrada') {
-                totalEntradas -= valor;
-            } else {
-                totalSaidas -= valor;
-            }
-            atualizarTotais();
-            novaLinha.remove();
-        });
-
-        tabela.prepend(novaLinha);
+        transacoes.push(novaTransacao);
+        salvarTransacoes();
+        renderizarInterface();
 
         form.reset();
         document.getElementById('data').valueAsDate = new Date();
