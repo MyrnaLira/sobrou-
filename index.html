@@ -485,7 +485,7 @@
         return JSON.parse(localStorage.getItem('app_users') || '{}');
     }
 
-    // Evento de Cadastro
+    // Evento de Cadastro (com login automático permanente)
     registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const user = document.getElementById('usuario-reg').value.trim().toLowerCase();
@@ -506,15 +506,12 @@
         } else {
             users[user] = pass;
             localStorage.setItem('app_users', JSON.stringify(users));
-            registerMsg.innerText = "Conta criada com sucesso! Faça login.";
-            registerMsg.className = "msg-box success-msg";
-            registerMsg.style.display = "block";
+            
+            // Grava a sessão permanente
+            localStorage.setItem('user_logged_in', user);
             registerForm.reset();
             
-            setTimeout(() => {
-                tabLogin.click();
-                registerMsg.style.display = "none";
-            }, 1500);
+            showApp();
         }
     });
 
@@ -526,7 +523,8 @@
         const users = getUsers();
 
         if (users[user] && users[user] === pass) {
-            localStorage.setItem('user_logged_in', 'true');
+            // Grava a sessão permanente
+            localStorage.setItem('user_logged_in', user);
             loginError.style.display = 'none';
             showApp();
         } else {
@@ -534,8 +532,8 @@
         }
     });
 
-    // Verificar se já está logado
-    if (localStorage.getItem('user_logged_in') === 'true') {
+    // Verificar se já está logado ao abrir a página
+    if (localStorage.getItem('user_logged_in')) {
         showApp();
     }
 
