@@ -9,8 +9,6 @@
     <meta property="og:title" content="Sobrou!">
     <meta property="og:description" content="Controle financeiro simples e prático.">
     <meta property="og:type" content="website">
-    <meta name="twitter:title" content="Sobrou!">
-    <meta name="twitter:description" content="Controle financeiro simples e prático.">
 
     <style>
         :root {
@@ -281,7 +279,7 @@
         .stat-saida { color: var(--red); }
         .stat-saldo { color: #ffffff; }
 
-        /* Tabela Otimizada para Celular */
+        /* Tabela Otimizada */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -342,14 +340,13 @@
         <div class="logo-box">SOBROU!</div>
     </div>
 
-    <!-- TELA DE AUTENTICAÇÃO (LOGIN / REGISTRO) -->
+    <!-- TELA DE AUTENTICAÇÃO -->
     <div id="auth-screen">
         <div class="auth-tabs">
             <button type="button" class="auth-tab active" id="tab-login">Entrar</button>
             <button type="button" class="auth-tab" id="tab-register">Cadastrar</button>
         </div>
 
-        <!-- FORMULÁRIO DE LOGIN -->
         <form id="login-form">
             <div class="form-group">
                 <label for="usuario-login">Usuário:</label>
@@ -363,7 +360,6 @@
             <button type="submit" class="btn-submit">Acessar</button>
         </form>
 
-        <!-- FORMULÁRIO DE CADASTRO -->
         <form id="register-form" class="hidden">
             <div class="form-group">
                 <label for="usuario-reg">Crie um Usuário:</label>
@@ -495,12 +491,10 @@
         loginForm.classList.add('hidden');
     });
 
-    // Função de carregar usuários salvos
     function getUsers() {
         return JSON.parse(localStorage.getItem('app_users') || '{}');
     }
 
-    // Evento de Cadastro
     registerForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const user = document.getElementById('usuario-reg').value.trim().toLowerCase();
@@ -527,7 +521,6 @@
         }
     });
 
-    // Evento de Login
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const user = document.getElementById('usuario-login').value.trim().toLowerCase();
@@ -543,7 +536,6 @@
         }
     });
 
-    // Função global de Logout
     window.fazerLogout = function() {
         localStorage.removeItem('user_logged_in');
         appScreen.classList.add('hidden');
@@ -552,7 +544,6 @@
         document.getElementById('senha-login').value = '';
     };
 
-    // Verificar se já está logado ao carregar
     if (localStorage.getItem('user_logged_in')) {
         showApp();
     }
@@ -564,14 +555,12 @@
         carregarTransacoes();
     }
 
-    // Lógica Financeira e Armazenamento
     const form = document.getElementById('finance-form');
     const tabela = document.getElementById('tabela-registros').querySelector('tbody');
-    
     let transacoes = [];
 
     function getStorageKey() {
-        const currentUser = localStorage.getItem('user_logged_in') || 'invitado';
+        const currentUser = localStorage.getItem('user_logged_in') || 'visitante';
         return `transacoes_${currentUser}`;
     }
 
@@ -626,26 +615,34 @@
         renderizarInterface();
     };
 
+    // SUBMISSÃO DO FORMULÁRIO FINANCEIRO
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const rawValor = document.getElementById('valor').value;
-        const valorTratado = parseFloat(rawValor.replace(/\./g, '').replace(',', '.'));
+        const rawValor = document.getElementById('valor').value.trim();
+        
+        // Tratamento para ler tanto 1000 quanto 1000.00 ou 1000,00
+        let valorLimpo = rawValor.replace(/\./g, '').replace(',', '.');
+        let valorTratado = parseFloat(valorLimpo);
 
         if (isNaN(valorTratado) || valorTratado <= 0) {
-            alert('Por favor, insira um valor numérico válido.');
+            alert('Por favor, digite um valor numérico válido.');
             return;
         }
 
         const descricaoInput = document.getElementById('descricao').value.trim();
+        const categoriaInput = document.getElementById('categoria').value.trim();
+        const dataInput = document.getElementById('data').value;
+        const formaInput = document.getElementById('forma').value;
+        const tipoInput = document.querySelector('input[name="tipo"]:checked').value;
 
         const novaTransacao = {
             id: Date.now(),
-            tipo: document.querySelector('input[name="tipo"]:checked').value,
+            tipo: tipoInput,
             descricao: descricaoInput !== '' ? descricaoInput : 'Sem descrição',
-            categoria: document.getElementById('categoria').value,
-            data: document.getElementById('data').value,
-            forma: document.getElementById('forma').value,
+            categoria: categoriaInput,
+            data: dataInput,
+            forma: formaInput,
             valor: valorTratado
         };
 
@@ -653,6 +650,7 @@
         salvarTransacoes();
         renderizarInterface();
 
+        // Limpeza do formulário
         form.reset();
         document.getElementById('data').valueAsDate = new Date();
     });
