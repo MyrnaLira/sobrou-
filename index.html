@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle do Fluxo de Caixa</title>
+    <style>
+        :root {
+            --gold: #c5a059;
+            --gold-hover: #b08d46;
+            --dark-bg: #111111;
+            --card-bg: #ffffff;
+            --input-bg: #f9f9f9;
+            --border-color: #e0e0e0;
+            --text-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f4f4;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding: 40px 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-box {
+            display: inline-block;
+            background: var(--dark-bg);
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            border: 1px solid var(--gold);
+        }
+
+        .title-divider {
+            border-top: 2px solid var(--gold);
+            border-bottom: 2px solid var(--gold);
+            padding: 8px 0;
+            margin: 20px 0 25px 0;
+            text-align: center;
+        }
+
+        .title-divider h2 {
+            font-size: 1.2rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #111;
+        }
+
+        .section-header {
+            background: var(--dark-bg);
+            color: var(--gold);
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .radio-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .radio-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-card:hover {
+            border-color: var(--gold);
+        }
+
+        .radio-card input[type="radio"] {
+            margin-right: 10px;
+            accent-color: var(--gold);
+        }
+
+        .radio-card label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #444;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #222;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--gold);
+            background: #fff;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--dark-bg);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background: var(--gold);
+            color: #fff;
+        }
+
+        /* Tabela e Resumo */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .card-stat {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .card-stat h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .card-stat p {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .stat-entrada { color: #2e7d32; }
+        .stat-saida { color: #c62828; }
+        .stat-saldo { color: #111; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: var(--dark-bg);
+            color: var(--gold);
+            text-align: left;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tipo-badge {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .badge-entrada { background: #e8f5e9; color: #2e7d32; }
+        .badge-saida { background: #ffebee; color: #c62828; }
+
+        @media (max-width: 600px) {
+            .radio-group, .form-row, .summary-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-container">
+        <div class="logo-box">FLUXO DE CAIXA</div>
+    </div>
+
+    <div class="title-divider">
+        <h2>Formulário de Entrada e Saída</h2>
+    </div>
+
+    <form id="finance-form">
+        <div class="section-header">TIPO DE TRANSAÇÃO</div>
+
+        <div class="radio-group">
+            <div class="radio-card">
+                <input type="radio" id="entrada" name="tipo" value="Entrada" checked>
+                <label for="entrada">Entrada (Receita)</label>
+            </div>
+            <div class="radio-card">
+                <input type="radio" id="saida" name="tipo" value="Saída">
+                <label for="saida">Saída (Despesa)</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="descricao">Descrição / Histórico:</label>
+            <input type="text" id="descricao" class="form-control" placeholder="Ex: Pagamento de Contrato, Material..." required>
+        </div>
+
+        <div class="form-group">
+            <label for="categoria">Categoria / Cliente:</label>
+            <input type="text" id="categoria" class="form-control" placeholder="Ex: Buffet Infantil, Fornecedor X...">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="data">Data:</label>
+                <input type="date" id="data" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="forma">Forma de Pagamento:</label>
+                <select id="forma" class="form-control">
+                    <option value="Pix">Pix</option>
+                    <option value="Cartão">Cartão</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Boleto">Boleto</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="valor">Valor (R$):</label>
+                <input type="number" step="0.01" id="valor" class="form-control" placeholder="0,00" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Registrar Transação</button>
+    </form>
+
+    <div class="summary-cards">
+        <div class="card-stat">
+            <h4>Total Entradas</h4>
+            <p class="stat-entrada" id="total-entradas">R$ 0,00</p>
+        </div>
+        <div class="card-stat">
+            <h4>Total Saídas</h4>
+            <p class="stat-saida" id="total-saidas">R$ 0,00</p>
+        </div>
+        <div class="card-stat">
+            <h4>Saldo Atual</h4>
+            <p class="stat-saldo" id="total-saldo">R$ 0,00</p>
+        </div>
+    </div>
+
+    <div class="section-header">HISTÓRICO RECENTE</div>
+    <table id="tabela-registros">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Transações inseridas via JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Define a data atual como padrão no campo de data
+    document.getElementById('data').valueAsDate = new Date();
+
+    const form = document.getElementById('finance-form');
+    const tabela = document.getElementById('tabela-registros').querySelector('tbody');
+    
+    let totalEntradas = 0;
+    let totalSaidas = 0;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const tipo = document.querySelector('input[name="tipo"]:checked').value;
+        const descricao = document.getElementById('descricao').value;
+        const categoria = document.getElementById('categoria').value;
+        const dataInput = document.getElementById('data').value;
+        const forma = document.getElementById('forma').value;
+        const valor = parseFloat(document.getElementById('valor').value);
+
+        // Formatação da data para dd/mm/aaaa
+        const partesData = dataInput.split('-');
+        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+
+        // Atualiza os totais
+        if (tipo === 'Entrada') {
+            totalEntradas += valor;
+        } else {
+            totalSaidas += valor;
+        }
+
+        const saldo = totalEntradas - totalSaidas;
+
+        // Atualiza a exibição no topo
+        document.getElementById('total-entradas').innerText = `R$ ${totalEntradas.toFixed(2)}`;
+        document.getElementById('total-saidas').innerText = `R$ ${totalSaidas.toFixed(2)}`;
+        document.getElementById('total-saldo').innerText = `R$ ${saldo.toFixed(2)}`;
+
+        // Adiciona a linha na tabela
+        const novaLinha = document.createElement('tr');
+        const badgeClass = tipo === 'Entrada' ? 'badge-entrada' : 'badge-saida';
+        
+        novaLinha.innerHTML = `
+            <td>${dataFormatada}</td>
+            <td>${descricao} <br><small style="color: #777;">${categoria ? categoria + ' • ' : ''}${forma}</small></td>
+            <td><span class="tipo-badge ${badgeClass}">${tipo}</span></td>
+            <td>R$ ${valor.toFixed(2)}</td>
+        `;
+
+        tabela.prepend(novaLinha);
+
+        // Limpa os campos do formulário
+        form.reset();
+        document.getElementById('data').valueAsDate = new Date();
+    });
+</script>
+
+</body>
+</html>
