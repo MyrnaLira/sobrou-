@@ -84,6 +84,31 @@
             color: #ffffff;
         }
 
+        /* NAVEGAÇÃO ENTRE LOGIN E CADASTRO */
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .auth-tab.active {
+            color: var(--pink);
+            border-bottom: 2px solid var(--pink);
+        }
+
         .section-header {
             background: #000000;
             color: var(--pink);
@@ -207,13 +232,14 @@
             cursor: pointer;
         }
 
-        .error-msg {
-            color: var(--red);
+        .msg-box {
             font-size: 0.8rem;
             text-align: center;
             margin-top: 10px;
             display: none;
         }
+        .error-msg { color: var(--red); }
+        .success-msg { color: var(--green); }
 
         /* Encartes de Resumo Financeiro */
         .summary-cards {
@@ -293,22 +319,39 @@
         <div class="logo-box">FLUXO DE CAIXA</div>
     </div>
 
-    <!-- TELA DE LOGIN -->
-    <div id="login-screen">
-        <div class="title-divider">
-            <h2>Acesso Restrito</h2>
+    <!-- TELA DE AUTENTICAÇÃO (LOGIN / REGISTRO) -->
+    <div id="auth-screen">
+        <div class="auth-tabs">
+            <button type="button" class="auth-tab active" id="tab-login">Entrar</button>
+            <button type="button" class="auth-tab" id="tab-register">Cadastrar</button>
         </div>
+
+        <!-- FORMULÁRIO DE LOGIN -->
         <form id="login-form">
             <div class="form-group">
-                <label for="usuario">Usuário:</label>
-                <input type="text" id="usuario" class="form-control" placeholder="Digite seu usuário" required autocomplete="username">
+                <label for="usuario-login">Usuário:</label>
+                <input type="text" id="usuario-login" class="form-control" placeholder="Seu usuário" required autocomplete="username">
             </div>
             <div class="form-group">
-                <label for="senha">Senha:</label>
-                <input type="password" id="senha" class="form-control" placeholder="Digite sua senha" required autocomplete="current-password">
+                <label for="senha-login">Senha:</label>
+                <input type="password" id="senha-login" class="form-control" placeholder="Sua senha" required autocomplete="current-password">
             </div>
-            <p id="login-error" class="error-msg">Usuário ou senha incorretos!</p>
-            <button type="submit" class="btn-submit">Entrar</button>
+            <p id="login-error" class="msg-box error-msg">Usuário ou senha incorretos!</p>
+            <button type="submit" class="btn-submit">Acessar</button>
+        </form>
+
+        <!-- FORMULÁRIO DE CADASTRO -->
+        <form id="register-form" class="hidden">
+            <div class="form-group">
+                <label for="usuario-reg">Crie um Usuário:</label>
+                <input type="text" id="usuario-reg" class="form-control" placeholder="Ex: maria123" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="senha-reg">Crie uma Senha:</label>
+                <input type="password" id="senha-reg" class="form-control" placeholder="Mínimo 4 caracteres" required autocomplete="new-password">
+            </div>
+            <p id="register-msg" class="msg-box"></p>
+            <button type="submit" class="btn-submit">Criar Conta</button>
         </form>
     </div>
 
@@ -320,7 +363,7 @@
 
         <form id="finance-form">
             <div class="section-header">
-                <span>TIPO DE TRANSAÇÃO</span>
+                <span>TRANSAÇÕES</span>
                 <button type="button" class="btn-logout" id="btn-logout">Sair</button>
             </div>
 
@@ -403,29 +446,78 @@
 </div>
 
 <script>
-    // Credenciais Padrão (Altere aqui se desejar outro usuário e senha)
-    const USUARIO_CORRETO = "admin";
-    const SENHA_CORRETA = "1234";
-
     // Elementos da Interface
-    const loginScreen = document.getElementById('login-screen');
+    const authScreen = document.getElementById('auth-screen');
     const appScreen = document.getElementById('app-screen');
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
     const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
     const loginError = document.getElementById('login-error');
+    const registerMsg = document.getElementById('register-msg');
     const btnLogout = document.getElementById('btn-logout');
 
-    // Verificar se já está logado no localStorage
-    if (localStorage.getItem('user_logged_in') === 'true') {
-        showApp();
+    // Alternar Abas
+    tabLogin.addEventListener('click', () => {
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+    });
+
+    tabRegister.addEventListener('click', () => {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+    });
+
+    // Função de carregar usuários salvos
+    function getUsers() {
+        return JSON.parse(localStorage.getItem('app_users') || '{}');
     }
+
+    // Evento de Cadastro
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const user = document.getElementById('usuario-reg').value.trim().toLowerCase();
+        const pass = document.getElementById('senha-reg').value.trim();
+
+        if (pass.length < 4) {
+            registerMsg.innerText = "A senha deve ter no mínimo 4 caracteres.";
+            registerMsg.className = "msg-box error-msg";
+            registerMsg.style.display = "block";
+            return;
+        }
+
+        const users = getUsers();
+        if (users[user]) {
+            registerMsg.innerText = "Este usuário já existe! Escolha outro.";
+            registerMsg.className = "msg-box error-msg";
+            registerMsg.style.display = "block";
+        } else {
+            users[user] = pass;
+            localStorage.setItem('app_users', JSON.stringify(users));
+            registerMsg.innerText = "Conta criada com sucesso! Faça login.";
+            registerMsg.className = "msg-box success-msg";
+            registerMsg.style.display = "block";
+            registerForm.reset();
+            
+            setTimeout(() => {
+                tabLogin.click();
+                registerMsg.style.display = "none";
+            }, 1500);
+        }
+    });
 
     // Evento de Login
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const userInput = document.getElementById('usuario').value.trim();
-        const passInput = document.getElementById('senha').value.trim();
+        const user = document.getElementById('usuario-login').value.trim().toLowerCase();
+        const pass = document.getElementById('senha-login').value.trim();
+        const users = getUsers();
 
-        if (userInput === USUARIO_CORRETO && passInput === SENHA_CORRETA) {
+        if (users[user] && users[user] === pass) {
             localStorage.setItem('user_logged_in', 'true');
             loginError.style.display = 'none';
             showApp();
@@ -434,17 +526,22 @@
         }
     });
 
+    // Verificar se já está logado
+    if (localStorage.getItem('user_logged_in') === 'true') {
+        showApp();
+    }
+
     // Evento de Logout
     btnLogout.addEventListener('click', function() {
         localStorage.removeItem('user_logged_in');
         appScreen.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
-        document.getElementById('usuario').value = '';
-        document.getElementById('senha').value = '';
+        authScreen.classList.remove('hidden');
+        document.getElementById('usuario-login').value = '';
+        document.getElementById('senha-login').value = '';
     });
 
     function showApp() {
-        loginScreen.classList.add('hidden');
+        authScreen.classList.add('hidden');
         appScreen.classList.remove('hidden');
         document.getElementById('data').valueAsDate = new Date();
     }
